@@ -140,7 +140,24 @@ with tab2:
         df_ranking.columns = ['Alumno', 'Votos Totales', 'Puntaje']
         df_ranking = df_ranking.sort_values('Puntaje', ascending=False).reset_index(drop=True)
         
-        st.dataframe(df_ranking.style.background_gradient(cmap="Greens", subset=['Puntaje']), use_container_width=True)
+        # FIX: Usamos column_config de Streamlit en lugar de pandas.style para evitar errores de dependencias (matplotlib/jinja2)
+        st.dataframe(
+            df_ranking,
+            column_config={
+                "Puntaje": st.column_config.ProgressColumn(
+                    "Puntaje",
+                    help="Puntaje calculado",
+                    format="%d",
+                    min_value=0,
+                    max_value=int(df_ranking['Puntaje'].max()) if not df_ranking.empty else 10,
+                ),
+                "Votos Totales": st.column_config.NumberColumn(
+                    "Votos Totales",
+                    format="%d 🗳️"
+                )
+            },
+            use_container_width=True
+        )
         
         fig_ranking = px.bar(
             df_ranking.head(10),
